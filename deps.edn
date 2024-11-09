@@ -1,0 +1,14 @@
+{:paths ["src", "resources"]
+ :deps {org.clojure/clojure {:mvn/version "1.12.0"}
+        org.clojure/data.priority-map {:mvn/version "1.2.0"}}
+ :aliases
+ {:test {:extra-paths ["dev" "test"]
+         :extra-deps {lambdaisland/kaocha {:mvn/version "1.91.1392"}}
+         :main-opts ["-m" "kaocha.runner"]}
+
+  :dev {:extra-paths ["dev" "test"]
+        :extra-deps {djblue/portal {:mvn/version "0.58.2"}}}
+
+  :build {:deps {io.github.clojure/tools.build {:mvn/version "0.10.5"}
+                 clj-kondo/clj-kondo           {:mvn/version "2024.09.27"}}
+          :ns-default build}}}
