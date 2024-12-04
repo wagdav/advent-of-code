@@ -1,63 +1,43 @@
 (ns aoc2024.day04
   (:require [clojure.string :as str]))
 
-(def example-input "MMMSXXMASM
-MSAMXMSMSA
-AMXSXMAAMM
-MSAMASMSMX
-XMASAMXAMM
-XXAMMXXAMA
-SMSMSASXSS
-SAXAMASAAA
-MAMMMXMMMM
-MXMXAXMASX")
-
 (defn parse-input [input]
   (mapv #(apply vector %)
     (for [r (str/split-lines input)]
       (for [c r]
         c))))
 
-(def directions [[0 1] [0 -1] [1 0] [-1 0] [1 1] [-1 -1] [-1 1] [1 -1]])
+(defn word
+  ([len]
+   (word len 0))
+  ([len offset]
+   (fn [p [r c] [dr dc]]
+     (apply str
+       (for [i (range offset (+ offset len))
+             :let [l (get-in p [(+ r (* i dr))
+                                (+ c (* i dc))])]
+             :while l]
+         l)))))
 
-(defn word [p [r c] [dr dc]]
-  (apply str
-    (for [i (range 4)
-          :let [l (get-in p [(+ r (* i dr))
-                             (+ c (* i dc))])]
-          :while l]
-      l)))
-
-(defn words [puzzle]
-  (let [rows (count puzzle)
-        cols (count (first puzzle))]
-    (for [r (range rows)
-          c (range cols)
+(defn words [puzzle word-fn]
+  (let [directions [[0 1] [0 -1] [1 0] [-1 0] [1 1] [-1 -1] [-1 1] [1 -1]]]
+    (for [r (range (count puzzle))
+          c (range (count (first puzzle)))
           d directions]
-      (word puzzle [r c] d))))
+      (word-fn puzzle [r c] d))))
 
-(defn cross [p [r c] [dr dc]]
-  (apply str
-    (for [pos [[(- r dr) (- c dc)]
-               [   r        c]
-               [(+ r dr) (+ c dc)]]
-          :let [l (get-in p pos)]
-          :while l]
-      l)))
-
-(defn crosses [puzzle]
-  (let [rows (count puzzle)
-        cols (count (first puzzle))]
-    (for [r (range rows)
-          c (range cols)]
-      (for [d [[1 1] [-1 -1] [1 -1] [-1 1]]]
-        (cross puzzle [r c] d)))))
+(defn crosses [puzzle word-fn]
+  (let [directions [[1 1] [-1 -1] [1 -1] [-1 1]]]
+    (for [r (range (count puzzle))
+          c (range (count (first puzzle)))]
+      (for [d directions]
+        (word-fn puzzle [r c] d)))))
 
 (defn solve-part1 [input]
-  (count (filter #(= "XMAS" %) (words input))))
+  (count (filter #(= "XMAS" %) (words input (word 4)))))
 
 (defn solve-part2 [input]
-  (->> (crosses input)
+  (->> (crosses input (word 3 -1))
        (map frequencies)
        (filter #(= 2 (get % "MAS")))
        (count)))
