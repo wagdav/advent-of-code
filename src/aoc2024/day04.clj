@@ -2,10 +2,7 @@
   (:require [clojure.string :as str]))
 
 (defn parse-input [input]
-  (mapv #(apply vector %)
-    (for [r (str/split-lines input)]
-      (for [c r]
-        c))))
+  (mapv vec (str/split-lines input)))
 
 (defn word
   ([len]
