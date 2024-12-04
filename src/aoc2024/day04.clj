@@ -17,18 +17,19 @@
          l)))))
 
 (defn words [puzzle word-fn]
-  (let [directions [[0 1] [0 -1] [1 0] [-1 0] [1 1] [-1 -1] [-1 1] [1 -1]]]
-    (for [r (range (count puzzle))
-          c (range (count (first puzzle)))
-          d directions]
-      (word-fn puzzle [r c] d))))
+  (for [r (range (count puzzle))
+        c (range (count (first puzzle)))
+        dr [-1 0 1]
+        dc [-1 0 1]
+        :when (not= dr dc 0)]
+    (word-fn puzzle [r c] [dr dc])))
 
 (defn crosses [puzzle word-fn]
-  (let [directions [[1 1] [-1 -1] [1 -1] [-1 1]]]
-    (for [r (range (count puzzle))
-          c (range (count (first puzzle)))]
-      (for [d directions]
-        (word-fn puzzle [r c] d)))))
+  (for [r (range (count puzzle))
+        c (range (count (first puzzle)))]
+    (for [dr [-1 1]
+          dc [-1 1]]
+      (word-fn puzzle [r c] [dr dc]))))
 
 (defn solve-part1 [input]
   (count (filter #(= "XMAS" %) (words input (word 4)))))
