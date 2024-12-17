@@ -112,16 +112,16 @@ Program: 0,3,5,4,3,0")
 (:out (run (assoc-in (parse-input quine) [:reg :a] 117440)))
 
 (defn prog [a]
-  (loop [out [], a a, c 0]
-    (println "a=" a "c=" c)
+  (loop [out [], a a]
     (if (zero? a)
       out
-      (let [c  (bit-shift-right a (bit-xor 1 (mod a 8)))
-            o  (+ 4 (bit-xor a c))
-            a' (quot a 8)]
+      (let [o (->> (mod a 8)
+                   (bit-xor 1)
+                   (bit-shift-right a)
+                   (bit-xor a)
+                   (+ 4))]
         (recur (conj out (mod o 8))
-               a'
-               c)))))
+               (quot a 8))))))
 
 (def expected-output [2 4 1 1 7 5 1 5 4 0 5 5 0 3 3 0])
 
@@ -135,7 +135,6 @@ Program: 0,3,5,4,3,0")
     (reverse (expected-output))))
 
 (prog 64854237)
-(prog 64854240)
 ; Program: 2,4,1,1,7,5,1,5,4,0,5,5,0,3,3,0
 
 (defn run-part2 [opts] ; > 23620000
