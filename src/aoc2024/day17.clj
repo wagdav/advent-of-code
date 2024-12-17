@@ -66,6 +66,22 @@ Program: 0,1,5,4,3,0")
                 (assoc-in [:reg :c] (quot (reg :a) (int (pow 2 (combo state arg)))))
                 (assoc :pc (+ pc 2)))))))
 
+(defn asm [{:keys [program]}]
+  (let [ops [:adv :bxl :bst :jnz :bxc :out :bdv :cdv]
+        combo #(if (<= 0 % 3) % ([:a :b :c] (- % 4)))
+        comment [":a = :a / 2^c%d"
+                 ":b = xor(:b, %d)"
+                 ":b = mod(c%d, 8)"
+                 "jnz(:a, %d)"
+                 ":b = xor(:b, :c)"
+                 "out(c%d mod 8)"
+                 ":b = :a / 2^c%d"
+                 ":c = :a / 2^c%d"]]
+    (doseq [[i [op arg]] (map-indexed vector (partition 2 program))]
+      (println i " " (ops op) arg ";" (format (get comment op "") arg)))))
+
+(asm ex)
+
 (defn run [input]
   (loop [state input]
      (let [state' (step state)]
@@ -95,8 +111,36 @@ Program: 0,3,5,4,3,0")
 
 (:out (run (assoc-in (parse-input quine) [:reg :a] 117440)))
 
+(defn prog [a]
+  (loop [out [], a a, b 0 c 0]
+    (if (zero? a)
+      out
+      (let [b (mod a 8)
+            bb (bit-xor b 1)
+            c (quot a (int (pow 2 bb)))
+            bbb (bit-xor bb 5)
+            bbbb (bit-xor bbb c)]
+        (recur (conj out (mod bbbb 8))
+               (quot a 8)
+               bbbb
+               c)))))
+
+(prog 64854237)
+
 (defn run-part2 [opts] ; > 23620000
   (solve-part2 (parse-input (slurp "resources/day17.txt"))))
 
 (defn run-part2-ex [opts]
   (solve-part2 (parse-input quine)))
+
+(comment
+  (:out (run (parse-input (slurp "resources/day17.txt")))) ; [4 1 7 6 4 1 0 2 7]
+  (asm (parse-input (slurp "resources/day17.txt")))
+
+  (let [real (parse-input (slurp "resources/day17.txt"))]
+    (asm real)
+    (dotimes [i 50]
+      (println (:reg (run (assoc-in real [:reg :a] i))))))
+
+  (dotimes [n 8]
+    (println (bit-xor 5 (bit-xor n 1)))))
