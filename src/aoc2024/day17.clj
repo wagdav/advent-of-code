@@ -115,17 +115,18 @@ Program: 0,3,5,4,3,0")
   (loop [out [], a a, b 0 c 0]
     (if (zero? a)
       out
-      (let [b (mod a 8)
-            bb (bit-xor b 1)
-            c (quot a (int (pow 2 bb)))
-            bbb (bit-xor bb 5)
-            bbbb (bit-xor bbb c)]
-        (recur (conj out (mod bbbb 8))
+      (let [b    (mod a 8)
+            b'   (bit-xor b 1)
+            c    (quot a (int (pow 2 b')))
+            b''  (bit-xor b' 5)
+            b''' (bit-xor b'' c)]
+        (recur (conj out (mod b''' 8))
                (quot a 8)
-               bbbb
+               b'''
                c)))))
 
 (prog 64854237)
+; Program: 2,4,1,1,7,5,1,5,4,0,5,5,0,3,3,0
 
 (defn run-part2 [opts] ; > 23620000
   (solve-part2 (parse-input (slurp "resources/day17.txt"))))
@@ -143,4 +144,4 @@ Program: 0,3,5,4,3,0")
       (println (:reg (run (assoc-in real [:reg :a] i))))))
 
   (dotimes [n 8]
-    (println (bit-xor 5 (bit-xor n 1)))))
+    (println (bit-xor n 5))))
