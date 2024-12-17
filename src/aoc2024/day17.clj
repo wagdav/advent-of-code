@@ -112,17 +112,15 @@ Program: 0,3,5,4,3,0")
 (:out (run (assoc-in (parse-input quine) [:reg :a] 117440)))
 
 (defn prog [a]
-  (loop [out [], a a, b 0 c 0]
+  (loop [out [], a a, c 0]
     (if (zero? a)
       out
-      (let [b   (mod a 8)
-            b'  (bit-xor 1 b)
-            c   (bit-shift-right a b')
-            b'' (bit-xor 5 b' c)]
-        (recur (conj out (mod b'' 8))
-               (quot a 8)
-               b''
-               c)))))
+      (let [c  (bit-shift-right a (bit-xor 1 (mod a 8)))
+            o  (+ 4 (bit-xor a c))
+            a' (quot a 8)]
+       (recur (conj out (mod o 8))
+              a'
+              c)))))
 
 (prog 64854237)
 ; Program: 2,4,1,1,7,5,1,5,4,0,5,5,0,3,3,0
@@ -137,10 +135,11 @@ Program: 0,3,5,4,3,0")
   (:out (run (parse-input (slurp "resources/day17.txt")))) ; [4 1 7 6 4 1 0 2 7]
   (asm (parse-input (slurp "resources/day17.txt")))
 
-  (let [real (parse-input (slurp "resources/day17.txt"))]
-    (asm real)
-    (dotimes [i 50]
-      (println (:reg (run (assoc-in real [:reg :a] i))))))
+  (let [real (parse-input (slurp "resources/day17.txt"))
+        reg-a 5000000000000
+        out1 (:out (run (assoc-in real [:reg :a] reg-a)))
+        out2 (prog reg-a)]
+    (= out1 out2))
 
   (dotimes [n 8]
-    (println (bit-xor n 1))))
+    (println (bit-xor n 5 1))))
