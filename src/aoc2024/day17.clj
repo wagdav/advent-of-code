@@ -115,14 +115,13 @@ Program: 0,3,5,4,3,0")
   (loop [out [], a a, b 0 c 0]
     (if (zero? a)
       out
-      (let [b    (mod a 8)
-            b'   (bit-xor b 1)
-            c    (quot a (int (pow 2 b')))
-            b''  (bit-xor b' 5)
-            b''' (bit-xor b'' c)]
-        (recur (conj out (mod b''' 8))
+      (let [b   (mod a 8)
+            b'  (bit-xor 1 b)
+            c   (quot a (int (pow 2 b')))
+            b'' (bit-xor 5 b' c)]
+        (recur (conj out (mod b'' 8))
                (quot a 8)
-               b'''
+               b''
                c)))))
 
 (prog 64854237)
@@ -144,4 +143,4 @@ Program: 0,3,5,4,3,0")
       (println (:reg (run (assoc-in real [:reg :a] i))))))
 
   (dotimes [n 8]
-    (println (bit-xor n 5))))
+    (println (bit-xor n 1))))
