@@ -80,8 +80,6 @@ Program: 0,1,5,4,3,0")
     (doseq [[i [op arg]] (map-indexed vector (partition 2 program))]
       (println i " " (ops op) arg ";" (format (get comment op "") arg)))))
 
-(asm ex)
-
 (defn run [input]
   (loop [state input]
      (let [state' (step state)]
@@ -103,36 +101,41 @@ Program: 0,1,5,4,3,0")
           reg-a)
         (recur (+ 10000000 reg-a))))))
 
-(def quine "Register A: 2024
-Register B: 0
-Register C: 0
-
-Program: 0,3,5,4,3,0")
-
-(:out (run (assoc-in (parse-input quine) [:reg :a] 117440)))
+(defn round [a]
+  (mod (->> (mod a 8)
+            (bit-xor 1)
+            (bit-shift-right a)
+            (bit-xor a)
+            (+ 4))
+       8))
 
 (defn prog [a]
   (loop [out [], a a]
     (if (zero? a)
       out
-      (let [o (->> (mod a 8)
-                   (bit-xor 1)
-                   (bit-shift-right a)
-                   (bit-xor a)
-                   (+ 4))]
-        (recur (conj out (mod o 8))
-               (quot a 8))))))
+      (recur (conj out (round a))
+             (quot a 8)))))
 
+(defn prog-asm [input a]
+  (:out (run (assoc-in input [:reg :a] a))))
+
+(defn prog' [a]
+  (prog-asm real a))
+
+(for [i (range 8)]
+  (prog' i))
+
+(for [i (range 8)]
+  (prog' (bit-or (bit-shift-left 4 3) (bit-shift-left i 0))))
+
+(for [i (range 8)]
+  (prog' (bit-or (bit-shift-left 4 6) (bit-shift-left 5 3) (bit-shift-left i 0))))
+
+(for [i (range 8)]
+  (prog' (bit-or (bit-shift-left 4 9) (bit-shift-left 5 6) (bit-shift-left 3 2) (bit-shift-left i 0))))
+
+(prog' 6)
 (def expected-output [2 4 1 1 7 5 1 5 4 0 5 5 0 3 3 0])
-
-(defn powi [x n]
-  (reduce * (repeat n x)))
-
-(for [a-final (range 8)
-      c-final (range 8)]
-  (reduce
-    (fn)
-    (reverse (expected-output))))
 
 (prog 64854237)
 ; Program: 2,4,1,1,7,5,1,5,4,0,5,5,0,3,3,0
@@ -140,12 +143,11 @@ Program: 0,3,5,4,3,0")
 (defn run-part2 [opts] ; > 23620000
   (solve-part2 (parse-input (slurp "resources/day17.txt"))))
 
-(defn run-part2-ex [opts]
-  (solve-part2 (parse-input quine)))
-
 (comment
   (:out (run (parse-input (slurp "resources/day17.txt")))) ; [4 1 7 6 4 1 0 2 7]
   (:program (parse-input (slurp "resources/day17.txt")))
+
+  (def real (parse-input (slurp "resources/day17.txt")))
 
   (let [real (parse-input (slurp "resources/day17.txt"))
         reg-a 5000000000000000
