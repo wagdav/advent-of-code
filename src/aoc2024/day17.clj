@@ -77,14 +77,15 @@ Program: 0,1,5,4,3,0")
   (str/join "," (:out (run input))))
 
 (defn solve-part2 [{:keys [program] :as input}]
-  (loop [reg-a 0]
-    (when (zero? (mod reg-a 10000))
-      (println reg-a))
-    (if (= program (:out (run (assoc-in input [:reg :a] reg-a))))
-      (do
-        (println "part2" reg-a)
-        reg-a)
-      (recur (inc reg-a)))))
+  (loop [reg-a 33392450000004]
+    (let [out (:out (run (assoc-in input [:reg :a] reg-a)))]
+      (when (zero? (mod reg-a 10000))
+        (println reg-a (count out)))
+      (if (= program out)
+        (do
+          (println "part2" reg-a)
+          reg-a)
+        (recur (+ 10000000 reg-a))))))
 
 (def quine "Register A: 2024
 Register B: 0
@@ -99,4 +100,3 @@ Program: 0,3,5,4,3,0")
 
 (defn run-part2-ex [opts]
   (solve-part2 (parse-input quine)))
-
