@@ -113,16 +113,29 @@ Program: 0,3,5,4,3,0")
 
 (defn prog [a]
   (loop [out [], a a, c 0]
+    (println "a=" a "c=" c)
     (if (zero? a)
       out
       (let [c  (bit-shift-right a (bit-xor 1 (mod a 8)))
             o  (+ 4 (bit-xor a c))
             a' (quot a 8)]
-       (recur (conj out (mod o 8))
-              a'
-              c)))))
+        (recur (conj out (mod o 8))
+               a'
+               c)))))
+
+(def expected-output [2 4 1 1 7 5 1 5 4 0 5 5 0 3 3 0])
+
+(defn powi [x n]
+  (reduce * (repeat n x)))
+
+(for [a-final (range 8)
+      c-final (range 8)]
+  (reduce
+    (fn)
+    (reverse (expected-output))))
 
 (prog 64854237)
+(prog 64854240)
 ; Program: 2,4,1,1,7,5,1,5,4,0,5,5,0,3,3,0
 
 (defn run-part2 [opts] ; > 23620000
@@ -133,10 +146,10 @@ Program: 0,3,5,4,3,0")
 
 (comment
   (:out (run (parse-input (slurp "resources/day17.txt")))) ; [4 1 7 6 4 1 0 2 7]
-  (asm (parse-input (slurp "resources/day17.txt")))
+  (:program (parse-input (slurp "resources/day17.txt")))
 
   (let [real (parse-input (slurp "resources/day17.txt"))
-        reg-a 5000000000000
+        reg-a 5000000000000000
         out1 (:out (run (assoc-in real [:reg :a] reg-a)))
         out2 (prog reg-a)]
     (= out1 out2))
