@@ -35,7 +35,7 @@ Program: 0,1,5,4,3,0")
         (case op
           ;adv
           0 (-> state
-                (assoc-in [:reg :a] (quot (reg :a) (int (pow 2 (combo state arg)))))
+                (assoc-in [:reg :a] (bit-shift-right (reg :a) (combo state arg)))
                 (assoc :pc (+ pc 2)))
           ;bxl
           1 (-> state
@@ -59,11 +59,11 @@ Program: 0,1,5,4,3,0")
                 (assoc :pc (+ pc 2)))
           ;bdv
           6 (-> state
-                (assoc-in [:reg :b] (quot (reg :a) (int (pow 2 (combo state arg)))))
+                (assoc-in [:reg :b] (bit-shift-right (reg :a) (combo state arg)))
                 (assoc :pc (+ pc 2)))
           ;cdv
           7 (-> state
-                (assoc-in [:reg :c] (quot (reg :a) (int (pow 2 (combo state arg)))))
+                (assoc-in [:reg :c] (bit-shift-right (reg :a) (combo state arg)))
                 (assoc :pc (+ pc 2)))))))
 
 (defn asm [{:keys [program]}]
@@ -117,7 +117,7 @@ Program: 0,3,5,4,3,0")
       out
       (let [b   (mod a 8)
             b'  (bit-xor 1 b)
-            c   (quot a (int (pow 2 b')))
+            c   (bit-shift-right a b')
             b'' (bit-xor 5 b' c)]
         (recur (conj out (mod b'' 8))
                (quot a 8)
