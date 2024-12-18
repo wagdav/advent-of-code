@@ -90,16 +90,29 @@ Program: 0,1,5,4,3,0")
 (defn solve-part1 [input]
   (str/join "," (:out (run input))))
 
-(defn solve-part2 [{:keys [program] :as input}]
-  (loop [reg-a 33392450000004]
-    (let [out (:out (run (assoc-in input [:reg :a] reg-a)))]
-      (when (zero? (mod reg-a 10000))
-        (println reg-a (count out)))
-      (if (= program out)
-        (do
-          (println "part2" reg-a)
-          reg-a)
-        (recur (+ 10000000 reg-a))))))
+(defn prog-a [input]
+  (fn [reg-a]
+    (:out (run (assoc-in input [:reg :a] reg-a)))))
+
+(defn solve-part2 [input]
+  (let [prog (prog-a input)
+        expected (:program input)]
+    (println expected)
+    (loop [i 0, candidates #{0}]
+      (if (= i 10)
+        candidates
+        (let [q' (pop q)
+              out (prog c)
+              res' (bit-or 0
+                           (bit-shift-left 2 1))
+              diff (- (count expected) (count out))]
+          (recur
+            (if (= out (drop diff expected))
+              (conj candidates c)
+              candidates)
+            (inc i)))))))
+
+(solve-part2 (parse-input (slurp "resources/day17.txt")))
 
 (defn round [a]
   (mod (->> (mod a 8)
@@ -115,12 +128,6 @@ Program: 0,1,5,4,3,0")
       out
       (recur (conj out (round a))
              (quot a 8)))))
-
-(defn prog-asm [input a]
-  (:out (run (assoc-in input [:reg :a] a))))
-
-(defn prog' [a]
-  (prog-asm real a))
 
 (for [i (range 8)]
   (prog' i))
