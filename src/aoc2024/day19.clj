@@ -30,9 +30,33 @@ bbrgwb")
                                      :when (str/starts-with? d p)]
                                  (.substring d (count p))))))))))
 
+(defn arrangements' [patterns design]
+  (loop [cnt 0, q (vector design)]
+    (if (empty? q)
+      cnt
+      (let [d (peek q)]
+        (if (empty? d)
+          (recur (inc cnt) (pop q))
+          (recur cnt (into (pop q) (for [p patterns
+                                         :when (str/starts-with? d p)]
+                                     (.substring d (count p))))))))))
+
+(def arrangements
+  (memoize (fn [patterns design]
+             (let [good (keep (fn [p] (when (str/starts-with? design p)
+                                        (.substring design (count p))))
+                              patterns)]
+               (+ (count (filter empty? good))
+                  (* (count (filter #(seq %) good))
+                     (count (map (partial arrangements patterns)
+                                 (filter #(seq %) good)))))))))
+
 (defn solve-part1 [[patterns designs]]
   (count (filter (partial possible? patterns) designs)))
 
-(solve-part1 ex)
+(defn solve-part2 [[patterns designs]]
+  (apply +
+    (for [d designs
+          :when (possible? patterns d)]
+      (arrangements patterns d))))
 
-(defn solve-part2 [input])

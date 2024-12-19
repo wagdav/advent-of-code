@@ -17,7 +17,7 @@ bbrgwb")
 (deftest works
   (testing "with example input"
     (is (= 6 (solve-part1 (parse-input example-input))))
-    (is (nil? (solve-part2 (parse-input example-input)))))
+    (is (= 16 (solve-part2 (parse-input example-input)))))
 
   (testing "with real input"
     (let [input (parse-input (slurp (io/resource "day19.txt")))]
