@@ -52,32 +52,13 @@
 (defn solve-part1 [input]
   (:path-cost (search/uniform-cost (make-problem input))))
 
-(defn dfs [problem limit]
-  (let [start (search/initial-state problem)]
-    (loop [res #{}
-           explored {}
-           frontier [(search/map->Node {:state start :actions [] :path [start] :path-cost 0})]]
-      (if (seq frontier)
-        (let [node (peek frontier)]
-          (recur
-            (if (search/goal? problem (:state node))
-              (into res (map :pos (:path node)))
-              res)
-            (conj explored [(select-keys (:state node) [:pos :facing]) (:path-cost node)])
-            (into (pop frontier)
-                  (for [action (search/actions problem (:state node))
-                        :let [c (search/child-node problem node action)
-                              s (:state c)]
-                        :when (and (<= (:path-cost c)
-                                       (get explored (select-keys s [:pos :facing]) limit)))]
-                    c))))
-        (count res)))))
-
 (defn solve-part2 [input]
-  (let [p (make-problem input)
-        min-cost (:path-cost (search/uniform-cost p))]
-    (println min-cost)
-    (dfs p min-cost)))
+  (let [p (make-problem input)]
+    (->> (search/uniform-cost-all p)
+         (mapcat :path)
+         (map :pos)
+         (set)
+         (count))))
 
 (comment
   (solve-part1 (parse-input example-input))
