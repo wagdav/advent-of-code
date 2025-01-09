@@ -24,7 +24,7 @@
       true)))
 
 (defn middle [s]
-  (first (drop (quot (count s) 2) s)))
+  (nth s (quot (count s) 2)))
 
 (defn reorder [rules pages]
   (sort #(contains? (rules %1) %2) pages))
