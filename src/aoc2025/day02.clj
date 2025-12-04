@@ -15,14 +15,15 @@
     (= (.substring as-str 0 mid)
        (.substring as-str mid))))
 
-(defn repeated? [number k]
-  (let [ps (partition k k (cycle [:pad]) (str number))]
-    (and
-      (< 1 (count ps))
-      (apply = ps))))
+(defn repeated? [digits k]
+  (let [ps (partitionv-all k digits)]
+    (apply = ps)))
 
 (defn at-least-doubled? [n]
-  (some (partial repeated? n) (range 1 (count (str n)))))
+  (let [digits (str n)]
+    (->> (range 1 (count digits))
+         (filter #(->> % (rem (count digits)) zero?))
+         (some (partial repeated? digits)))))
 
 (defn check-range [filter-fn [start end]]
   (->> (range start (inc end))
