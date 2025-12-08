@@ -49,7 +49,9 @@
 
 (defn make-project
   ([year]
-   (make-project year (range 1 26)))
+   (make-project year (if (<= 2025 year)
+                        (range 1 26)
+                        (range 1 13))))
 
   ([year days]
    (let [aoc (format "aoc%04d" year)]
