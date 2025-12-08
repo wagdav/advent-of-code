@@ -74,4 +74,4 @@
   (print (src-str 2022 1))
   (print (test-str 2022 5))
   (take 3 (make-project 2022))
-  (write-project (make-project 2024) "/home/dwagner/projects/advent-of-code-2024"))
+  (write-project (make-project 2025 [9 10 11 12]) "/home/dwagner/projects/advent-of-code/"))
