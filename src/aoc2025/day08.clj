@@ -33,8 +33,8 @@
      (* (- a2 b2) (- a2 b2))
      (* (- a3 b3) (- a3 b3))))
 
-(defn circuit [start connections]
-  (loop [explored #{start}
+(defn circuit [start explored connections]
+  (loop [explored explored
          frontier [start]]
     (if (empty? frontier)
       explored
@@ -53,6 +53,18 @@
               (into (remove explored from))
               (into (remove explored to))))))))
 
+(defn circuit2 [start connections size]
+  (loop [explored #{start}
+         frontier [start]
+         connections connections]
+    (if (= (count explored) size)
+      (last connections)
+      (let [f (peek frontier)]
+        (recur
+          (into explored (first connections))
+          (into (pop frontier) (remove explored connections))
+          (rest connections))))))
+
 (defn solve-part1 [n-pairs input]
   (let [by-distance (sort-by first
                      (for [[i a] (map-indexed vector input)
@@ -65,13 +77,55 @@
            junctions (set input)]
       (if (empty? junctions)
         (apply * (take 3 (sort > (map count circuits))))
-        (let [new-circuit (circuit (first junctions) connections)]
+        (let [new-circuit (circuit (first junctions) #{(first junctions)} connections)]
            (recur
              (conj circuits new-circuit)
              (remove new-circuit (rest junctions))))))))
 
-(defn solve-part2 [id-ranges])
+(defn solve-part2* [input]
+  (let [by-distance (sort-by first
+                     (for [[i a] (map-indexed vector input)
+                           [j b] (map-indexed vector input)
+                           :when (< i j)]
+                       [(distance a b) a b]))]
+    (loop [n 10
+           crt #{}]
+        (prn n)
+        (let [connections (->> (take n by-distance)
+                               (mapv #(drop 1 %)))
+              new-circuit (circuit (second (first by-distance)) #{} connections)]
+          #_(prn (last connections) (count new-circuit))
+          (if (= (count new-circuit) (count input))
+            (->> (last connections)
+                 (map first)
+                 (apply *))
+            (recur (inc n) new-circuit))))))
+
+(defn solve-part2 [input]
+  (let [by-distance (sort-by first
+                     (for [[i a] (map-indexed vector input)
+                           [j b] (map-indexed vector input)
+                           :when (< i j)]
+                       [(distance a b) a b]))
+        connections (mapv #(drop 1 %) by-distance)]
+    (->> (circuit2 (ffirst connections) connections (count input))
+         (map first)
+         (apply *))))
 
 (->> example-input
      parse-input
      (solve-part1 10))
+
+(defn run [opts]
+  (let [input (parse-input (slurp (clojure.java.io/resource "day08.txt")))]
+     (prn (solve-part2 input))))
+
+(defn run-ex [opts]
+  (prn (->> example-input
+            parse-input
+            solve-part2)))
+
+(comment
+  (time (->> example-input
+             parse-input
+             solve-part2)))

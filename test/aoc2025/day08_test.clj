@@ -27,10 +27,10 @@
 (deftest works
   (testing "with example input"
     (is (= 40 (solve-part1 10 (parse-input example-input))))
-    (is (= nil (solve-part2 (parse-input example-input)))))
+    (is (= 32103 (solve-part2 (parse-input example-input)))))
 
   (testing "with real input"
     (let [input (parse-input (slurp (io/resource "day08.txt")))]
       (is (= 32103 (solve-part1 1000 input)))
-      (is (= nil (solve-part2 input))))))
+      (is (= 8133642976 (solve-part2 input))))))
 
