@@ -101,6 +101,17 @@
                  (apply *))
             (recur (inc n) new-circuit))))))
 
+(defn solve-part2** [input]
+  (let [by-distance (sort-by first
+                     (for [[i a] (map-indexed vector input)
+                           [j b] (map-indexed vector input)
+                           :when (< i j)]
+                       [(distance a b) a b]))
+        connections (mapv #(drop 1 %) by-distance)]
+    (->> (circuit2 (ffirst connections) connections (count input))
+         (map first)
+         (apply *))))
+
 (defn solve-part2 [input]
   (let [by-distance (sort-by first
                      (for [[i a] (map-indexed vector input)
@@ -108,6 +119,14 @@
                            :when (< i j)]
                        [(distance a b) a b]))
         connections (mapv #(drop 1 %) by-distance)]
+    (reduce
+      (fn [circuit [a b]]
+        (let [new-circuit (conj circuit a b)]
+          (if (= (count new-circuit) (count input))
+            (reduced (* (first a) (first b)))
+            (conj circuit a b))))
+      #{}
+      connections)
     (->> (circuit2 (ffirst connections) connections (count input))
          (map first)
          (apply *))))
