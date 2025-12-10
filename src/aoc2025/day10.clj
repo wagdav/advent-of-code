@@ -54,7 +54,7 @@
 
 (defn fewest-presses2 [{:keys [joltages buttons]}]
   (:path-cost
-    (search/uniform-cost
+    (search/A*
       (reify search/Problem
         (actions [this state]
           (for [bs buttons
@@ -67,18 +67,23 @@
         (result [this state action]
           (increase-joltage state action))
         (step-cost [this state action]
-          1)))))
+          1))
+      (fn [{:keys [state]}]
+        (let [deltas (map - joltages state)]
+          (apply max deltas))))))
 
 (defn solve-part1 [input]
   (apply + (map fewest-presses input)))
 
-(->> example-input
-     parse-input
-     solve-part1)
-
 (defn solve-part2 [input]
   (apply + (map fewest-presses2 input)))
 
-(->> example-input
-   parse-input
-   solve-part2)
+(defn run [opts]
+  (let [input (parse-input (slurp (clojure.java.io/resource "day10.txt")))]
+    (doseq [problem (reverse input)]
+      (prn (fewest-presses2 problem)))))
+
+(comment
+  (time (->> example-input
+             parse-input
+             solve-part2)))

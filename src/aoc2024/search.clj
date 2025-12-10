@@ -27,20 +27,6 @@
   (for [action (actions problem (:state node))]
     (child-node problem node action)))
 
-(defn uniform-cost [problem]
-  (let [start (make-node (initial-state problem))]
-    (loop [explored #{}
-           frontier (priority-map start (:path-cost start))]
-      (when-let [[node cost] (peek frontier)]
-        (if (goal? problem (:state node))
-          node
-          (recur
-            (conj explored (:state node))
-            (into (pop frontier) (for [child (expand problem node)
-                                       :let [state (:state child)]
-                                       :when (not (explored state))]
-                                   [child (:path-cost child)]))))))))
-
 (defn uniform-cost-all [problem]
   (let [start (make-node (initial-state problem))]
     (loop [reached {}
@@ -60,22 +46,20 @@
               (into (pop frontier) (for [c children] [c (:path-cost c)])))))))))
 
 (defn best-first [problem f]
-  (let [start-state (initial-state problem)
-        start-node  (map->Node {:state start-state :actions [] :path [start-state] :path-cost 0})]
-    (loop [reached {start-state start-node}
-           frontier (priority-map-keyfn f start-state start-node)]
-      (when-let [[state node] (peek frontier)]
-        (if (goal? problem state)
+  (let [start (make-node (initial-state problem))]
+    (loop [explored #{}
+           frontier (priority-map start (f start))]
+      (when-let [[node cost] (peek frontier)]
+        (if (goal? problem (:state node))
           node
-          (let [children (for [action (actions problem state)
-                               :let [c (child-node problem node action)
-                                     s (:state c)]
-                               :when (or (not (reached s))
-                                         (< (:path-cost c) (:path-cost (reached s))))]
-                           [s c])]
-            (recur
-              (into reached children)
-              (into (pop frontier) children))))))))
+          (recur
+            (conj explored (:state node))
+            (into (pop frontier) (for [child (expand problem node)
+                                       :when (not (explored (:state child)))]
+                                   [child (f child)]))))))))
+
+(defn uniform-cost [problem]
+  (best-first problem :path-cost))
 
 (defn A* [problem h]
   (best-first problem (fn [^Node node] (+ (:path-cost node) (h node)))))

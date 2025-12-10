@@ -15,4 +15,4 @@
   (testing "with real input"
     (let [input (parse-input (slurp (io/resource "day10.txt")))]
       (time (is (= 512 (solve-part1 input))))
-      (time (is (nil? (solve-part2 input)))))))
+      #_(time (is (nil? (solve-part2 input)))))))
