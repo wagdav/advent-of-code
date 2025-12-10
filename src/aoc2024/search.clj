@@ -28,20 +28,18 @@
     (child-node problem node action)))
 
 (defn uniform-cost [problem]
-  (let [start (initial-state problem)]
+  (let [start (make-node (initial-state problem))]
     (loop [explored #{}
-           frontier (priority-map-keyfn :path-cost start
-                      (map->Node {:state start :actions [] :path [start]
-                                  :path-cost 0}))]
-      (when-let [[state node] (peek frontier)]
-        (if (goal? problem state)
+           frontier (priority-map start (:path-cost start))]
+      (when-let [[node cost] (peek frontier)]
+        (if (goal? problem (:state node))
           node
           (recur
-            (conj explored state)
-            (into (pop frontier) (for [action (actions problem state)
-                                       :let [c (child-node problem node action)
-                                             s (:state c)]
-                                       :when (not (explored s))] [s c]))))))))
+            (conj explored (:state node))
+            (into (pop frontier) (for [child (expand problem node)
+                                       :let [state (:state child)]
+                                       :when (not (explored state))]
+                                   [child (:path-cost child)]))))))))
 
 (defn uniform-cost-all [problem]
   (let [start (make-node (initial-state problem))]

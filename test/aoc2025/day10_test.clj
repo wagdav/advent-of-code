@@ -10,9 +10,9 @@
 (deftest works
   (testing "with example input"
     (is (= 7 (solve-part1 (parse-input example-input))))
-    (is (nil? (solve-part2 (parse-input example-input)))))
+    (is (= 33 (solve-part2 (parse-input example-input)))))
 
   (testing "with real input"
     (let [input (parse-input (slurp (io/resource "day10.txt")))]
-      (is (= 512 (solve-part1 input)))
-      (is (nil? (solve-part2 input))))))
+      (time (is (= 512 (solve-part1 input))))
+      (time (is (nil? (solve-part2 input)))))))

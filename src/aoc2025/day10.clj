@@ -23,30 +23,51 @@
                                 (mapv parse-long))})))))
 
 (defn toggle [state buttons]
+  (map-indexed (fn [i s]
+                 (if (buttons i)
+                   (not s)
+                   s))
+               state))
+
+(defn increase-joltage [state buttons]
   (vec
     (map-indexed (fn [i s]
                    (if (buttons i)
-                     (not s)
+                     (inc s)
                      s))
                  state)))
 
-(toggle [false false] #{0})
-
 (defn fewest-presses [{:keys [indicators buttons]}]
-  (first
-    (map :path-cost
-      (search/uniform-cost-all
-        (reify search/Problem
-          (actions [this state]
-            buttons)
-          (goal? [this state]
-            (= state indicators))
-          (initial-state [this]
-            (repeat (count indicators) false))
-          (result [this state action]
-            (toggle state action))
-          (step-cost [this state action]
-            1))))))
+  (:path-cost
+    (search/uniform-cost
+      (reify search/Problem
+        (actions [this state]
+          buttons)
+        (goal? [this state]
+          (= state indicators))
+        (initial-state [this]
+          (repeat (count indicators) false))
+        (result [this state action]
+          (toggle state action))
+        (step-cost [this state action]
+          1)))))
+
+(defn fewest-presses2 [{:keys [joltages buttons]}]
+  (:path-cost
+    (search/uniform-cost
+      (reify search/Problem
+        (actions [this state]
+          (for [bs buttons
+                :when (every? #(< (state %) (joltages %)) bs)]
+            bs))
+        (goal? [this state]
+          (= state joltages))
+        (initial-state [this]
+          (vec (repeat (count joltages) 0)))
+        (result [this state action]
+          (increase-joltage state action))
+        (step-cost [this state action]
+          1)))))
 
 (defn solve-part1 [input]
   (apply + (map fewest-presses input)))
@@ -55,4 +76,9 @@
      parse-input
      solve-part1)
 
-(defn solve-part2 [input])
+(defn solve-part2 [input]
+  (apply + (map fewest-presses2 input)))
+
+(->> example-input
+   parse-input
+   solve-part2)
