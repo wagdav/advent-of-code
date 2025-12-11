@@ -78,6 +78,18 @@
 (defn solve-part2 [input]
   (apply + (map fewest-presses2 input)))
 
+(defn button-vec [b size]
+  (for [i (range size)]
+    (if (b i) 1 0)))
+
+(button-vec #{1 5} 10)
+
+(defn presses [{:keys [joltages buttons]}]
+  (let [buttons (map #(button-vec % (count joltages)) buttons)]
+    buttons))
+
+(defn presses [joltages])
+
 (defn run [opts]
   (let [input (parse-input (slurp (clojure.java.io/resource "day10.txt")))]
     (doseq [problem (reverse input)]
@@ -86,4 +98,5 @@
 (comment
   (time (->> example-input
              parse-input
-             solve-part2)))
+             first
+             presses)))
