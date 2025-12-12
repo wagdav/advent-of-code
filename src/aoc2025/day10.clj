@@ -52,25 +52,28 @@
         (step-cost [this state action]
           1)))))
 
-(defn fewest-presses2 [{:keys [joltages buttons]}]
-  (:path-cost
-    (search/A*
-      (reify search/Problem
-        (actions [this state]
-          (for [bs buttons
-                :when (every? #(< (state %) (joltages %)) bs)]
-            bs))
-        (goal? [this state]
-          (= state joltages))
-        (initial-state [this]
-          (vec (repeat (count joltages) 0)))
-        (result [this state action]
-          (increase-joltage state action))
-        (step-cost [this state action]
-          1))
-      (fn [{:keys [state]}]
-        (let [deltas (map - joltages state)]
-          (apply max deltas))))))
+(defn button-vec [b size]
+  (into [] (for [i (range size)]
+             (if (b i) 1 0))))
+
+(def fewest-presses2
+  (memoize
+    (fn [{:keys [joltages buttons]}]
+      (cond
+        (empty? buttons) ##Inf
+        (some neg? joltages) ##Inf
+        (every? zero? joltages) 0
+        :else
+        (let [button (-> (first buttons)
+                         (button-vec (count joltages)))]
+          (min
+            (inc (fewest-presses2 {:joltages (mapv - joltages button)
+                                   :buttons buttons}))
+            (fewest-presses2 {:joltages joltages
+                              :buttons (rest buttons)})))))))
+
+(->> example-input
+     parse-input)
 
 (defn solve-part1 [input]
   (apply + (map fewest-presses input)))
@@ -78,25 +81,12 @@
 (defn solve-part2 [input]
   (apply + (map fewest-presses2 input)))
 
-(defn button-vec [b size]
-  (for [i (range size)]
-    (if (b i) 1 0)))
-
-(button-vec #{1 5} 10)
-
-(defn presses [{:keys [joltages buttons]}]
-  (let [buttons (map #(button-vec % (count joltages)) buttons)]
-    buttons))
-
-(defn presses [joltages])
-
 (defn run [opts]
   (let [input (parse-input (slurp (clojure.java.io/resource "day10.txt")))]
-    (doseq [problem (reverse input)]
-      (prn (fewest-presses2 problem)))))
+    (prn (fewest-presses2 (first input)))
+    (prn (solve-part2 input))))
 
 (comment
   (time (->> example-input
              parse-input
-             first
-             presses)))
+             solve-part2)))
