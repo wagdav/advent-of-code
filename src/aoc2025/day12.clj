@@ -69,7 +69,7 @@
 (defn free-coords [region]
   (for [[r row] (map-indexed vector region)
         [c v]   (map-indexed vector row)
-        :when (= v \.)]
+        :while (= v \.)]
     [r c]))
 
 (defn make-region [[w l]]
@@ -119,9 +119,7 @@
                  free-spot (free-coords region)
                  :let [new-region (place-present region free-spot orientation p)]
                  :when new-region]
-             (do
-               (show! new-region)
-               (all-fit? presents [new-region (update required p dec)] p)))))))))
+             (all-fit? presents [new-region (update required p dec)] p))))))))
 
 (def presents (->> example-input
                    parse-input
