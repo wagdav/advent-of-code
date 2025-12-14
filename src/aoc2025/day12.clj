@@ -49,23 +49,54 @@
     {:shapes shapes
      :regions regions}))
 
-(defn rotate [s]
-  (->> s
+(defn rotate [present]
+  (->> present
        (apply map vector)
        (mapv (comp vec reverse))))
+
+(defn flip [present]
+  (mapv #(vec (reverse %)) present))
+
+(defn present-coords [present]
+  (for [[r row] (map-indexed vector present)
+        [c v]   (map-indexed vector row)
+        :when (= v \#)]
+    [r c]))
+
+(defn make-region [[w l]]
+  (vec (repeat l (vec (repeat w \.)))))
+
+(defn place-present [region delta present]
+  (reduce
+    (fn [region coord]
+      (let [target (mapv + delta coord)
+            v (get-in region target)]
+        (prn target v)
+        (if (= v \.)
+          (assoc-in region target \#)
+          (reduced nil))))
+    region
+    (present-coords present)))
 
 (defn show! [s]
   (doseq [l s]
     (prn (apply str l))))
 
-(->> example-input
-     parse-input
-     :shapes
-     first
-     (show!))
+(defn show-region! [region]
+  (run! prn region))
 
-(->> example-input
-     parse-input)
+(let [present (->> example-input
+                   parse-input
+                   :shapes)]
+  (-> (make-region [4 4])
+      (place-present [0 0] (rotate (present 4)))
+      (show-region!)))
+
+(def presents (->> example-input
+                   parse-input
+                   :shapes))
+
+(flip (presents 0))
 
 (defn solve-part1 [input])
 
