@@ -71,7 +71,6 @@
     (fn [region coord]
       (let [target (mapv + delta coord)
             v (get-in region target)]
-        (prn target v)
         (if (= v \.)
           (assoc-in region target \#)
           (reduced nil))))
@@ -96,7 +95,8 @@
                    parse-input
                    :shapes))
 
-(flip (presents 0))
+(show! (presents 0))
+(show! (flip (presents 0)))
 
 (defn solve-part1 [input])
 
