@@ -101,13 +101,15 @@
   (doseq [l s]
     (prn (apply str l))))
 
-(defn all-orientations [present]
-  (for [rotated [present
-                 (-> present rotate)
-                 (-> present rotate rotate)
-                 (-> present rotate rotate rotate)]
-        present' [rotated (flip rotated)]]
-    present'))
+(def all-orientations
+  (memoize
+    (fn [present]
+      (for [rotated [present
+                     (-> present rotate)
+                     (-> present rotate rotate)
+                     (-> present rotate rotate rotate)]
+            present' [rotated (flip rotated)]]
+        present'))))
 
 (def all-fit?
   (memoize
@@ -131,13 +133,6 @@
                  :let [new-region (place-present region free-spot orientation)]
                  :when new-region]
              (all-fit? presents [new-region (update required p dec)] p))))))))
-
-(def presents (->> example-input
-                   parse-input
-                   :shapes))
-
-(show! (presents 0))
-(show! (flip (presents 0)))
 
 (defn solve-part1 [{:keys [shapes regions]}]
   (count (filter #(all-fit? shapes %) regions)))
