@@ -67,21 +67,32 @@
     [r c]))
 
 (defn free-coords [region]
-  (for [[r row] (map-indexed vector region)
-        [c v]   (map-indexed vector row)
-        :while (= v \.)]
-    [r c]))
+  (let [occupied (for [[r row] (map-indexed vector region)
+                       [c v]   (map-indexed vector row)
+                       :when (= v \#)]
+                   [r c])]
+
+    (if (seq occupied)
+      (for [[r c] occupied
+            dr [-1 0 1]
+            dc [-1 0 1]
+            :let [rr (+ r dr)
+                  cc (+ c dc)]
+            :when (and (not= dr dc 0)
+                       (= \. (get-in region [rr cc])))]
+        [rr cc])
+      [[0 0]])))
 
 (defn make-region [[w l]]
   (vec (repeat l (vec (repeat w \.)))))
 
-(defn place-present [region delta present a]
+(defn place-present [region delta present]
   (reduce
     (fn [region coord]
       (let [target (mapv + delta coord)
             v (get-in region target)]
         (if (= v \.)
-          (assoc-in region target a)
+          (assoc-in region target \#)
           (reduced nil))))
     region
     (present-coords present)))
@@ -117,7 +128,7 @@
            true?
            (for [orientation (all-orientations (presents p))
                  free-spot (free-coords region)
-                 :let [new-region (place-present region free-spot orientation p)]
+                 :let [new-region (place-present region free-spot orientation)]
                  :when new-region]
              (all-fit? presents [new-region (update required p dec)] p))))))))
 
