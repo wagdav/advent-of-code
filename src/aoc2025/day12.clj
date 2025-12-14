@@ -43,9 +43,12 @@
                                 (mapv vec))))
         regions (->> (last lines)
                      (str/split-lines)
-                     (map #(->> (re-seq #"\d+" %)
-                                (map parse-long)
-                                (split-at 2))))]
+                     (map (fn [line]
+                            (let [[size required] (->> line
+                                                       (re-seq #"\d+")
+                                                       (map parse-long)
+                                                       (split-at 2))]
+                             [size (vec required)]))))]
     {:shapes shapes
      :regions regions}))
 
@@ -63,16 +66,22 @@
         :when (= v \#)]
     [r c]))
 
+(defn free-coords [region]
+  (for [[r row] (map-indexed vector region)
+        [c v]   (map-indexed vector row)
+        :when (= v \.)]
+    [r c]))
+
 (defn make-region [[w l]]
   (vec (repeat l (vec (repeat w \.)))))
 
-(defn place-present [region delta present]
+(defn place-present [region delta present a]
   (reduce
     (fn [region coord]
       (let [target (mapv + delta coord)
             v (get-in region target)]
         (if (= v \.)
-          (assoc-in region target \#)
+          (assoc-in region target a)
           (reduced nil))))
     region
     (present-coords present)))
@@ -81,15 +90,38 @@
   (doseq [l s]
     (prn (apply str l))))
 
-(defn show-region! [region]
-  (run! prn region))
+(defn all-orientations [present]
+  (for [rotated [present
+                 (-> present rotate)
+                 (-> present rotate rotate)
+                 (-> present rotate rotate rotate)]
+        present' [rotated (flip rotated)]]
+    present'))
 
-(let [present (->> example-input
-                   parse-input
-                   :shapes)]
-  (-> (make-region [4 4])
-      (place-present [0 0] (rotate (present 4)))
-      (show-region!)))
+(def all-fit?
+  (memoize
+    (fn
+      ([presents [region required]]
+       (all-fit? presents [(make-region region) required] 0))
+
+      ([presents [region required] p]
+       (cond
+         (= p (count presents))
+         (every? zero? required) ; checked everything and all
+
+         (zero? (required p))
+         (all-fit? presents [region required] (inc p))
+
+         :else
+         (some
+           true?
+           (for [orientation (all-orientations (presents p))
+                 free-spot (free-coords region)
+                 :let [new-region (place-present region free-spot orientation p)]
+                 :when new-region]
+             (do
+               (show! new-region)
+               (all-fit? presents [new-region (update required p dec)] p)))))))))
 
 (def presents (->> example-input
                    parse-input
@@ -98,11 +130,35 @@
 (show! (presents 0))
 (show! (flip (presents 0)))
 
-(defn solve-part1 [input])
+(defn solve-part1 [{:keys [shapes regions]}]
+  (count (filter #(all-fit? shapes %) regions)))
 
 (defn solve-part2 [input])
 
-(comment
+(defn run [opts]
+  (->> example-input
+       parse-input
+       solve-part1
+       prn))
+
+(defn run-real [opts]
   (->> (clojure.java.io/resource "day12.txt")
        slurp
-       parse-input))
+       parse-input
+       solve-part1
+       prn))
+
+(comment
+  (let [present (->> example-input
+                   parse-input
+                   :shapes)]
+   (-> (make-region [4 4])
+     (place-present [0 0] (rotate (present 4)))))
+
+  (->> (clojure.java.io/resource "day12.txt")
+       slurp
+       parse-input)
+
+  (->> example-input
+       parse-input
+       solve-part1))
