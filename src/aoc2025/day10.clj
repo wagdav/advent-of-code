@@ -30,12 +30,17 @@
                state))
 
 (defn increase-joltage [state buttons]
-  (vec
-    (map-indexed (fn [i s]
-                   (if (buttons i)
-                     (inc s)
-                     s))
-                 state)))
+  (loop [i 0
+         res state]
+    (if (= i (count state))
+      res
+      (recur
+        (inc i)
+        (if (buttons i)
+          (update res i inc)
+          res)))))
+
+(increase-joltage [1 2 3 4 5] #{0})
 
 (defn fewest-presses [{:keys [indicators buttons]}]
   (:path-cost
