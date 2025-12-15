@@ -72,6 +72,26 @@
             (fewest-presses2 {:joltages joltages
                               :buttons (rest buttons)})))))))
 
+(defn fewest-presses2 [{:keys [joltages buttons]}]
+  (:path-cost
+    (search/A*
+      (reify search/Problem
+        (actions [this state]
+          (for [bs buttons
+                :when (every? #(< (state %) (joltages %)) bs)]
+            bs))
+        (goal? [this state]
+          (= state joltages))
+        (initial-state [this]
+          (vec (repeat (count joltages) 0)))
+        (result [this state action]
+          (increase-joltage state action))
+        (step-cost [this state action]
+          1))
+      (fn [{:keys [state]}]
+        (let [deltas (map - joltages state)]
+          (reduce + deltas))))))
+
 (->> example-input
      parse-input)
 
